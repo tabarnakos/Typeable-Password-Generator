@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PwGen8U")]
-[assembly: AssemblyDescription("Custom password generator algorithm.")]
+[assembly: AssemblyTitle("Typeable Password Generator")]
+[assembly: AssemblyDescription("Custom password generator algorithm. Which creates strong, yet easy to type passwords on mobile devices. Emphasis is placed on readability and minimizing keboard switching. The generated password will group characters from the same character set together, and separate them with a common separator.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Dominik Reichl")]
+[assembly: AssemblyCompany("Marc-André Harvey")]
 [assembly: AssemblyProduct("KeePass Plugin")]
-[assembly: AssemblyCopyright("Copyright © 2012 Dominik Reichl")]
+[assembly: AssemblyCopyright("Copyright © 2020 Marc-André Harvey")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

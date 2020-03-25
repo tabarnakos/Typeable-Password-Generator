@@ -1,10 +1,10 @@
 ﻿/*
-  PwGen8U Plugin
-  Copyright (C) 2012 Dominik Reichl <dominik.reichl@t-online.de>
+  TypeablePasswordGenerator Plugin
+  Copyright (C) 2020 Marc-André Harvey <TBD email address>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
+  the Free Software Foundation; either version 3 of the License, or
   (at your option) any later version.
 
   This program is distributed in the hope that it will be useful,
@@ -27,13 +27,14 @@ using KeePassLib.Cryptography;
 using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Security;
 
-namespace PwGen8U
+namespace TypeablePasswordGenerator
 {
-	public sealed class Pw8UGenerator : CustomPwGenerator
+	public sealed class TypeablePasswordGenerator : CustomPwGenerator
 	{
+		/* Created using Visual Studio 2019 "Create GUID" feature */
 		private static readonly PwUuid m_uuid = new PwUuid(new byte[] {
-			0x7C, 0xB0, 0x8D, 0x92, 0xFE, 0x96, 0x46, 0x8D,
-			0xBA, 0x3A, 0x18, 0x20, 0x27, 0x47, 0xB4, 0x1A
+			0x21, 0xFD, 0x69, 0x52, 0xC4, 0x1D, 0x43, 0x93,
+			0xA2, 0x0D, 0x9E, 0xBA, 0x9B, 0xB6, 0x45, 0x5C
 		});
 		public override PwUuid Uuid
 		{
@@ -42,7 +43,7 @@ namespace PwGen8U
 
 		public override string Name
 		{
-			get { return "PwGen8U"; }
+			get { return "TypeablePasswordGenerator"; }
 		}
 
 		public override ProtectedString Generate(PwProfile prf,

@@ -1,10 +1,10 @@
 ﻿/*
-  PwGen8U Plugin
-  Copyright (C) 2012 Dominik Reichl <dominik.reichl@t-online.de>
+  TypeablePasswordGenerator Plugin
+  Copyright (C) 2020 Marc-André Harvey <TBD email address>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
+  the Free Software Foundation; either version 3 of the License, or
   (at your option) any later version.
 
   This program is distributed in the hope that it will be useful,
@@ -24,12 +24,12 @@ using System.Diagnostics;
 
 using KeePass.Plugins;
 
-namespace PwGen8U
+namespace TypeablePasswordGenerator
 {
-	public sealed class PwGen8UExt : Plugin
+	public sealed class TypeablePasswordGeneratorExt : Plugin
 	{
 		private IPluginHost m_host = null;
-		private Pw8UGenerator m_gen = null;
+		private TypeablePasswordGenerator m_gen = null;
 
 		public override bool Initialize(IPluginHost host)
 		{
@@ -39,7 +39,7 @@ namespace PwGen8U
 
 			m_host = host;
 
-			m_gen = new Pw8UGenerator();
+			m_gen = new TypeablePasswordGenerator();
 			m_host.PwGeneratorPool.Add(m_gen);
 
 			return true;
