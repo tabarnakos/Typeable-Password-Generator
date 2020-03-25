@@ -49,46 +49,81 @@ namespace TypeablePasswordGenerator
 		public override ProtectedString Generate(PwProfile prf,
 			CryptoRandomStream crsRandomSource)
 		{
-			if(prf == null) { Debug.Assert(false); }
+			/* 
+			 * Step #0 : input validation
+			 */
+			if (prf == null) { Debug.Assert(false); }
 			else
 			{
 				Debug.Assert(prf.CustomAlgorithmUuid == Convert.ToBase64String(
 					m_uuid.UuidBytes, Base64FormattingOptions.None));
 			}
 
-			// Starts with an upper-case letter
-			ulong u = crsRandomSource.GetRandomUInt64();
-			u %= (ulong)PwCharSet.UpperCase.Length;
-			char chFirst = PwCharSet.UpperCase[(int)u];
+			/* 
+			 * Step #1 : configuration
+			 */
+			List<string> l_charsets = new List<string>();
+			List<char> l_separators = new List<char>();
+			/* here we should parse the options regarding which character sets to use */
+			/* let's just use some fixed values for now */
+			l_charsets.Add(PwCharSet.UpperCase);
+			l_charsets.Add(PwCharSet.LowerCase);
+			l_charsets.Add(PwCharSet.Digits);
+			l_charsets.Add("#@$()&_=+-?!/%:'\" *");
+			l_charsets.Add("£€¥¢©®™~¿[] {} <>^¡`;÷\\|¦¬×§¶°");
 
-			List<char> l = new List<char>();
+			l_separators.Add(' ');
+			l_separators.Add('.');
+			l_separators.Add('-');
+			l_separators.Add('_');
 
-			// Contains at least one digit
-			u = crsRandomSource.GetRandomUInt64();
-			u %= (ulong)PwCharSet.Digits.Length;
-			l.Add(PwCharSet.Digits[(int)u]);
+			int i_password_length = 50;
+			int i_min_sep_lenght = 2;
+			int i_max_sep_lenght = 3;
 
-			// Contains at least one lower-case letter
-			u = crsRandomSource.GetRandomUInt64();
-			u %= (ulong)PwCharSet.LowerCase.Length;
-			l.Add(PwCharSet.LowerCase[(int)u]);
-
-			string strAlphaNumeric = PwCharSet.UpperCase +
-				PwCharSet.LowerCase + PwCharSet.Digits;
-			while(l.Count < 7)
+			/* 
+			 * Step #2 : setup
+			 */
+			/* Pick a fixed separator for the whole password */
+			int i_sep_lenght = GetRandInt(i_min_sep_lenght, i_max_sep_lenght+1, crsRandomSource);
+			string s_separator = "";
+			char c_separator = GetRandListElement(l_separators, crsRandomSource);
+			while (s_separator.Length < i_sep_lenght)
 			{
-				u = crsRandomSource.GetRandomUInt64();
-				u %= (ulong)strAlphaNumeric.Length;
-				l.Add(strAlphaNumeric[(int)u]);
+				s_separator += c_separator;
+			}
+			l_separators = null;
+
+
+			/*
+			 * Step #3 : iterative generation
+			 */
+			int i_generated_length = 0;
+			List<string> l_charGroups = new List<string>(l_charsets.Count);
+			while (l_charGroups.Count < l_charsets.Count)
+			{
+				l_charGroups.Add("");
 			}
 
-			ShuffleList(l, crsRandomSource);
+			while (i_generated_length + (s_separator.Length * (l_charsets.Count-1)) < i_password_length)
+			{
+				int i_charset = GetRandInt(l_charsets.Count, crsRandomSource);
+				l_charGroups[i_charset] += GetRandCharFromString(l_charsets[i_charset], crsRandomSource);
+				i_generated_length ++;
+			}
 
-			return new ProtectedString(false, (new string(chFirst, 1)) +
-				(new string(l.ToArray())));
+			ShuffleList(l_charGroups, crsRandomSource);
+			string s_generated_password = l_charGroups[0];
+			for (int i=1; i < l_charGroups.Count; ++i)
+			{
+				s_generated_password += s_separator;
+				s_generated_password += l_charGroups[i];
+			}
+
+			return new ProtectedString(false, s_generated_password);
 		}
 
-		private static void ShuffleList(List<char> l, CryptoRandomStream crs)
+		private static void ShuffleList<T>(List<T> l, CryptoRandomStream crs)
 		{
 			if(l == null) { Debug.Assert(false); return; }
 			if(l.Count <= 1) return; // Nothing to shuffle
@@ -101,10 +136,47 @@ namespace TypeablePasswordGenerator
 
 				if(i == j) continue;
 
-				char t = l[i];
+				T t = l[i];
 				l[i] = l[j];
 				l[j] = t;
 			}
 		}
+
+		/// <summary>
+		/// Helper function that returns a random character from the given string.
+		/// </summary>
+		private static char GetRandCharFromString(string s, CryptoRandomStream crs)
+		{
+			if (s == null) { Debug.Assert(false); }
+			int i = GetRandInt(s.Length, crs);
+			return s[i];
+		}
+		/// <summary>
+		/// Helper function that returns a random number between 0 and max-1.
+		/// </summary>
+		private static int GetRandInt(int max, CryptoRandomStream crs)
+		{
+			/* Returns a random number between 0 and max-1 */
+			Debug.Assert(max != 0);
+			ulong u = crs.GetRandomUInt64();
+			u %= (ulong)max;
+			return (int)u;
+		}
+		/// <summary>
+		/// Helper function that returns a random number between min and max-1.
+		/// </summary>
+		private static int GetRandInt(int min, int max, CryptoRandomStream crs)
+		{
+			return min + GetRandInt(max-min, crs);
+		}
+		/// <summary>
+		/// Helper function that returns a random element of the given list.
+		/// </summary>
+		private static T GetRandListElement<T>(List<T> l, CryptoRandomStream crs) 
+		{
+			Debug.Assert(l.Count != 0);
+			return l[GetRandInt(l.Count, crs)];
+		}
+
 	}
 }
