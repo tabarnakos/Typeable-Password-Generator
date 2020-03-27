@@ -32,10 +32,9 @@ namespace TypeablePasswordGenerator
 	public sealed class TypeablePasswordGenerator : CustomPwGenerator
 	{
 		/* Created using Visual Studio 2019 "Create GUID" feature */
-		private static readonly PwUuid m_uuid = new PwUuid(new byte[] {
-			0x21, 0xFD, 0x69, 0x52, 0xC4, 0x1D, 0x43, 0x93,
-			0xA2, 0x0D, 0x9E, 0xBA, 0x9B, 0xB6, 0x45, 0x5C
-		});
+		private static readonly PwUuid m_uuid = new PwUuid(new Guid(Properties.Strings.UUID).ToByteArray());
+		TypeablePasswordConfig m_curConfig = new TypeablePasswordConfig();
+
 		public override PwUuid Uuid
 		{
 			get { return m_uuid; }
@@ -43,7 +42,31 @@ namespace TypeablePasswordGenerator
 
 		public override string Name
 		{
-			get { return "TypeablePasswordGenerator"; }
+			get { return Properties.Strings.PluginName; }
+		}
+
+		/// <summary>
+		/// Enables the cog menu
+		/// </summary>
+		public override bool SupportsOptions => true;
+
+		/// <summary>
+		/// API to fetch the current options as a string
+		/// </summary>
+		public override string GetOptions(string strCurrentOptions)
+		{
+			/* here we would load the XML? unless Keepass keeps this config on its own */
+			TypeablePasswordConfigForm configForm = new TypeablePasswordConfigForm(m_curConfig);
+
+			TypeablePasswordConfig newConfig = configForm.GetConfig();
+			if (newConfig != m_curConfig)
+			{
+				m_curConfig = newConfig;
+				/* here we would save to XML? unless Keepass keeps this config on its own */
+			}
+			configForm.Dispose();
+
+			return newConfig.ToString();
 		}
 
 		public override ProtectedString Generate(PwProfile prf,
@@ -62,53 +85,35 @@ namespace TypeablePasswordGenerator
 			/* 
 			 * Step #1 : configuration
 			 */
-			List<string> l_charsets = new List<string>();
-			List<char> l_separators = new List<char>();
-			/* here we should parse the options regarding which character sets to use */
-			/* let's just use some fixed values for now */
-			l_charsets.Add(PwCharSet.UpperCase);
-			l_charsets.Add(PwCharSet.LowerCase);
-			l_charsets.Add(PwCharSet.Digits);
-			l_charsets.Add("#@$()&_=+-?!/%:'\" *");
-			l_charsets.Add("£€¥¢©®™~¿[] {} <>^¡`;÷\\|¦¬×§¶°");
-
-			l_separators.Add(' ');
-			l_separators.Add('.');
-			l_separators.Add('-');
-			l_separators.Add('_');
-
-			int i_password_length = 50;
-			int i_min_sep_lenght = 2;
-			int i_max_sep_lenght = 3;
+			
 
 			/* 
 			 * Step #2 : setup
 			 */
 			/* Pick a fixed separator for the whole password */
-			int i_sep_lenght = GetRandInt(i_min_sep_lenght, i_max_sep_lenght+1, crsRandomSource);
+			int i_sep_lenght = GetRandInt(m_curConfig.i_min_sep_lenght, m_curConfig.i_max_sep_lenght + 1, crsRandomSource);
 			string s_separator = "";
-			char c_separator = GetRandListElement(l_separators, crsRandomSource);
+			char c_separator = GetRandListElement(m_curConfig.l_separators, crsRandomSource);
 			while (s_separator.Length < i_sep_lenght)
 			{
 				s_separator += c_separator;
 			}
-			l_separators = null;
 
 
 			/*
 			 * Step #3 : iterative generation
 			 */
 			int i_generated_length = 0;
-			List<string> l_charGroups = new List<string>(l_charsets.Count);
-			while (l_charGroups.Count < l_charsets.Count)
+			List<string> l_charGroups = new List<string>(m_curConfig.l_charsets.Count);
+			while (l_charGroups.Count < m_curConfig.l_charsets.Count)
 			{
 				l_charGroups.Add("");
 			}
 
-			while (i_generated_length + (s_separator.Length * (l_charsets.Count-1)) < i_password_length)
+			while (i_generated_length + (s_separator.Length * (m_curConfig.l_charsets.Count-1)) < m_curConfig.i_password_length)
 			{
-				int i_charset = GetRandInt(l_charsets.Count, crsRandomSource);
-				l_charGroups[i_charset] += GetRandCharFromString(l_charsets[i_charset], crsRandomSource);
+				int i_charset = GetRandInt(m_curConfig.l_charsets.Count, crsRandomSource);
+				l_charGroups[i_charset] += GetRandCharFromString(m_curConfig.l_charsets[i_charset], crsRandomSource);
 				i_generated_length ++;
 			}
 
